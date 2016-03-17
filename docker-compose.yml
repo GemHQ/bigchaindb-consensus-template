@@ -1,0 +1,31 @@
+rethinkdb:
+  image: rethinkdb
+  ports:
+    - "58080:8080"
+    - "28015"
+  volumes_from:
+    - rethinkdb-data
+
+rethinkdb-data:
+  image: rethinkdb
+  volumes:
+    - /data
+  command: "true"
+
+bigchaindb:
+  build: .
+  volumes:
+    - ./tests:/usr/src/app/tests
+    - ./setup.py:/usr/src/app/setup.py
+    - ./setup.cfg:/usr/src/app/setup.cfg
+    - ./pytest.ini:/usr/src/app/pytest.ini
+    - ~/.bigchaindb_docker:/root/.bigchaindb_docker
+  links:
+    - rethinkdb
+  ports:
+    - "5000:5000"
+  environment:
+    BIGCHAIN_DATABASE_HOST: rethinkdb
+    BIGCHAIN_CONSENSUS_PLUGIN: PLUGIN_NAME
+    BIGCHAINDB_CONFIG_PATH: /root/.bigchaindb_docker/config
+  command: bigchaindb start
